@@ -15,10 +15,11 @@ interface Pessoa {
 }
 
 function PersonAutoComplete() {
-  const { control } = useFormContext();
+  const { control, setValue } = useFormContext();
   const [open, setOpen] = useState(false);
   const [options, setOptions] = useState<Pessoa[]>([]);
-  const loading = open && options.length === 0;
+  const [inputValue, setInputValue] = useState('');
+  const loading = open && options.length === 0 && inputValue.length > 0;
 
   useEffect(() => {
     let active = true;
@@ -27,11 +28,9 @@ function PersonAutoComplete() {
       return undefined;
     }
 
-    (async () => {
+    const timer = setTimeout(async () => {
       try {
-
-        const response = await fetch('http://localhost:5000/pessoas');
-        await sleep(1e3); // Adicionado um sleep pra simular o delay do debounce.
+        const response = await fetch(`http://localhost:5000/pessoas`);
         const pessoas: Pessoa[] = await response.json();
 
         if (active) {
@@ -40,12 +39,13 @@ function PersonAutoComplete() {
       } catch (error) {
         console.error('Erro ao buscar pessoas:', error);
       }
-    })();
+    }, 500); // 500ms de debounce
 
     return () => {
       active = false;
+      clearTimeout(timer);
     };
-  }, [loading]);
+  }, [loading, inputValue]);
 
   useEffect(() => {
     if (!open) {
@@ -67,8 +67,18 @@ function PersonAutoComplete() {
           onClose={() => {
             setOpen(false);
           }}
+          onInputChange={(event, newInputValue) => {
+            setInputValue(newInputValue);
+          }}
+          onChange={(event, item) => {
+            if (item && item.id) {
+              setValue('pessoa', +item.id); 
+            } else {
+              setValue('pessoa', null); 
+            }
+          }}
           isOptionEqualToValue={(option, value) => option.id === value.id}
-          getOptionLabel={(option) => option.nome}
+          getOptionLabel={(option) => option ? option.nome : ""}
           options={options}
           loading={loading}
           renderInput={(params) => (
@@ -93,11 +103,6 @@ function PersonAutoComplete() {
   );
 }
 
-function sleep(delay: number): Promise<void> {
-  return new Promise<void>((resolve) => {
-    setTimeout(resolve, delay);
-  });
-}
 
 
 const formSchema = zod.object({
