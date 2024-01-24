@@ -39,7 +39,7 @@ function PersonAutoComplete() {
       } catch (error) {
         console.error('Erro ao buscar pessoas:', error);
       }
-    }, 500); // 500ms de debounce
+    }, 500);
 
     return () => {
       active = false;
@@ -78,7 +78,7 @@ function PersonAutoComplete() {
             }
           }}
           isOptionEqualToValue={(option, value) => option.id === value.id}
-          getOptionLabel={(option) => option ? option.nome : ""}
+          getOptionLabel={(option) => option.nome} 
           options={options}
           loading={loading}
           renderInput={(params) => (
