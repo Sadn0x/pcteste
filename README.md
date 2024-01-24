@@ -39,6 +39,12 @@ Siga os passos abaixo para configurar o projeto em sua máquina local:
    npm run dev
    ```
 
+4. **Inicie o servidor do JsonServer:**
+
+   ```bash
+   npx json-server --watch db.json --port 5000
+   ```
+
 Acesse http://localhost:3000 para ver o projeto no navegador.
 
 ## Estrutura do Projeto
