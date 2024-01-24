@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useForm, Controller, useFormContext, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as zod from 'zod';
-import { Container, Box, Typography, Grid, Paper, Snackbar, Slide } from '@mui/material';
+import { Container, Box, Typography, Grid, Paper, Snackbar, Slide, CircularProgress } from '@mui/material';
 import Autocomplete from '@mui/material/Autocomplete';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
@@ -16,21 +16,42 @@ interface Pessoa {
 
 function PersonAutoComplete() {
   const { control } = useFormContext();
+  const [open, setOpen] = useState(false);
   const [options, setOptions] = useState<Pessoa[]>([]);
+  const loading = open && options.length === 0;
 
   useEffect(() => {
-    const fetchData = async () => {
+    let active = true;
+
+    if (!loading) {
+      return undefined;
+    }
+
+    (async () => {
       try {
+
         const response = await fetch('http://localhost:5000/pessoas');
-        const data: Pessoa[] = await response.json();
-        setOptions(data);
+        await sleep(1e3); // Adicionado um sleep pra simular o delay do debounce.
+        const pessoas: Pessoa[] = await response.json();
+
+        if (active) {
+          setOptions(pessoas);
+        }
       } catch (error) {
         console.error('Erro ao buscar pessoas:', error);
       }
-    };
+    })();
 
-    fetchData();
-  }, []);
+    return () => {
+      active = false;
+    };
+  }, [loading]);
+
+  useEffect(() => {
+    if (!open) {
+      setOptions([]);
+    }
+  }, [open]);
 
   return (
     <Controller
@@ -39,18 +60,45 @@ function PersonAutoComplete() {
       render={({ field }) => (
         <Autocomplete
           {...field}
-          options={options}
-          getOptionLabel={(option) => option.nome}
-          isOptionEqualToValue={(option, value) => option.id === value.id}
-          onChange={(event, item) => {
-            field.onChange(item ? +item.id : null);
+          open={open}
+          onOpen={() => {
+            setOpen(true);
           }}
-          renderInput={(params) => <TextField {...params} label="Pessoa" fullWidth />}
+          onClose={() => {
+            setOpen(false);
+          }}
+          isOptionEqualToValue={(option, value) => option.id === value.id}
+          getOptionLabel={(option) => option.nome}
+          options={options}
+          loading={loading}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Pessoa"
+              InputProps={{
+                ...params.InputProps,
+                endAdornment: (
+                  <>
+                    {loading ? <CircularProgress color="inherit" size={20} /> : null}
+                    {params.InputProps.endAdornment}
+                  </>
+                ),
+              }}
+              fullWidth
+            />
+          )}
         />
       )}
     />
   );
 }
+
+function sleep(delay: number): Promise<void> {
+  return new Promise<void>((resolve) => {
+    setTimeout(resolve, delay);
+  });
+}
+
 
 const formSchema = zod.object({
   pessoa: zod.number(),
