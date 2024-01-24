@@ -43,7 +43,7 @@ function PersonAutoComplete() {
           getOptionLabel={(option) => option.nome}
           isOptionEqualToValue={(option, value) => option.id === value.id}
           onChange={(event, item) => {
-            field.onChange(item ? item.id : null);
+            field.onChange(item ? +item.id : null);
           }}
           renderInput={(params) => <TextField {...params} label="Pessoa" fullWidth />}
         />
@@ -53,10 +53,11 @@ function PersonAutoComplete() {
 }
 
 const formSchema = zod.object({
-  pessoa: zod.number().optional(),   
-  telefone: zod.string().regex(/^\d+$/, 'Telefone deve conter apenas números'),
+  pessoa: zod.number(),
+  telefone: zod.string().regex(/^\d*$/, 'Telefone deve conter apenas números'),
   email: zod.string().email('Email inválido')
 });
+
 
 export default function Home() {
   const methods = useForm({
