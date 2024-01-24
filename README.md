@@ -6,8 +6,9 @@ Este projeto é uma implementação de um formulário dinâmico utilizando NextJ
 
 - **Formulário Dinâmico:** Utilização do React Hook Form para gerenciamento de estado do formulário.
 - **Campo Autocomplete:** Campo para busca de pessoas com sugestões automáticas, integrado com dados assíncronos.
-- **Validação de Campos:** (Opcional) Possibilidade de adicionar validação de campos com Zod.
-- **Estilização com MUI:** Uso de componentes MUI para uma interface de usuário elegante e responsiva.
+- **Validação de Campos:** Validação de campos com Zod.
+- **Estilização com MUI:** Uso de componentes MUI para uma interface responsiva.
+- **Json Server:** Uso do Json Server para simular um banco de dados.
 
 ## Pré-requisitos
 
@@ -21,21 +22,21 @@ Siga os passos abaixo para configurar o projeto em sua máquina local:
 
 1. **Clone o repositório:**
    ```bash
-   git clone https://link-para-o-repositorio
-   cd nome-do-
+   git clone https://github.com/Sadn0x/pcteste.git
+   cd pcteste
    ```
 
 2. **Instale as dependências:**
 
-```bash
-npm install
+   ```bash
+   npm install
    ```
 
 3. **Inicie o servidor de desenvolvimento:**
 
 
    ```bash
-npm run dev
+   npm run dev
    ```
 
 Acesse http://localhost:3000 para ver o projeto no navegador.
