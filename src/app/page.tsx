@@ -16,42 +16,37 @@ interface Pessoa {
 
 function PersonAutoComplete() {
   const { control, setValue } = useFormContext();
-  const [open, setOpen] = useState(false);
   const [options, setOptions] = useState<Pessoa[]>([]);
   const [inputValue, setInputValue] = useState('');
-  const loading = open && options.length === 0 && inputValue.length > 0;
+  const [loading, setLoading] = useState(false); 
 
   useEffect(() => {
     let active = true;
 
-    if (!loading) {
+    if (inputValue === '') {
+      setOptions([]);
       return undefined;
     }
 
-    const timer = setTimeout(async () => {
-      try {
-        const response = await fetch(`http://localhost:5000/pessoas`);
-        const pessoas: Pessoa[] = await response.json();
+    setLoading(true); 
 
-        if (active) {
-          setOptions(pessoas);
-        }
-      } catch (error) {
-        console.error('Erro ao buscar pessoas:', error);
-      }
-    }, 500);
+    const delayDebounce = setTimeout(() => {
+      fetch(`http://localhost:5000/pessoas?nome_like=${inputValue}`)
+        .then((response) => response.json())
+        .then((pessoas) => {
+          if (active) {
+            setOptions(pessoas);
+          }
+        })
+        .catch((error) => console.error('Erro ao buscar pessoas:', error))
+        .finally(() => setLoading(false));
+    }, 700); 
 
     return () => {
       active = false;
-      clearTimeout(timer);
+      clearTimeout(delayDebounce);
     };
-  }, [loading, inputValue]);
-
-  useEffect(() => {
-    if (!open) {
-      setOptions([]);
-    }
-  }, [open]);
+  }, [inputValue]); 
 
   return (
     <Controller
@@ -60,25 +55,14 @@ function PersonAutoComplete() {
       render={({ field }) => (
         <Autocomplete
           {...field}
-          open={open}
-          onOpen={() => {
-            setOpen(true);
-          }}
-          onClose={() => {
-            setOpen(false);
-          }}
           onInputChange={(event, newInputValue) => {
-            setInputValue(newInputValue);
+            setInputValue(newInputValue); 
           }}
           onChange={(event, item) => {
-            if (item && item.id) {
-              setValue('pessoa', +item.id); 
-            } else {
-              setValue('pessoa', null); 
-            }
+            setValue('pessoa', item ? item.id : null);
           }}
           isOptionEqualToValue={(option, value) => option.id === value.id}
-          getOptionLabel={(option) => option.nome} 
+          getOptionLabel={(option) => option.nome}
           options={options}
           loading={loading}
           renderInput={(params) => (
@@ -103,12 +87,13 @@ function PersonAutoComplete() {
   );
 }
 
-
-
 const formSchema = zod.object({
-  pessoa: zod.number(),
-  telefone: zod.string().regex(/^\d*$/, 'Telefone deve conter apenas números'),
-  email: zod.string().email('Email inválido')
+  pessoa: zod.number().nonnegative('ID de pessoa inválido').optional(), 
+  telefone: zod.string()
+                .min(10, 'O telefone deve ter pelo menos 10 dígitos') 
+                .max(11, 'O telefone deve ter no máximo 11 dígitos')  
+                .regex(/^\d*$/, 'Telefone deve conter apenas números'),
+  email: zod.string().email('Email inválido') 
 });
 
 
