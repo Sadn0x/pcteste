@@ -58,6 +58,11 @@ function PersonAutoComplete() {
           onInputChange={(event, newInputValue) => {
             setInputValue(newInputValue); 
           }}
+          noOptionsText={
+            inputValue === '' 
+              ? 'Aguardando pesquisa por pessoa' 
+              : (loading ? 'Carregando...' : 'Nenhuma opção')
+          }
           onChange={(event, item) => {
             setValue('pessoa', item ? item.id : null);
           }}
